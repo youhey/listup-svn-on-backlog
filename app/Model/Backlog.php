@@ -29,41 +29,12 @@ class Backlog extends AppModel {
     public $useTable = false;
 
     /**
-     * Return an array of project and Subversion URL
-     *
-     * <p>To extract only the projects in the user participation.</p>
-     *
-     * @return array The projects and Subversion URL
-     * @throws InternalErrorException If fail to query the API
-     */
-    public function fetchProjectsAndSvnUrl() {
-        $alongWithSvnUrl = array();
-
-        $projects = $this->fetchProjects();
-        foreach ($projects as $project) {
-            $projectKey = $project['key'];
-            $svnUrl     = $this->toSvnUrl($projectKey);
-            $projectUrl = $this->toProjectUrl($projectKey);
-            if ($this->existsSubversion($svnUrl)) {
-                $addition = array(
-                        'svn' => $svnUrl,
-                        'url' => $projectUrl,
-                    );
-                $elements = Set::merge($project, $addition);
-                $alongWithSvnUrl[] = $elements;
-            }
-        }
-
-        return $alongWithSvnUrl;
-    }
-
-    /**
      * Return an array of project participation
      *
-     * @return array The participation in all projects
+     * @return Array The participation in all projects
      * @throws InternalErrorException If fail to query the API
      */
-    private function fetchProjects() {
+    public function fetchProjects() {
         $url      = Configure::read('Backlog.url');
         $userName = Configure::read('Backlog.userName');
         $password = Configure::read('Backlog.password');
@@ -82,14 +53,26 @@ class Backlog extends AppModel {
             throw new InternalErrorException($message);
         }
 
+        foreach ($projects as &$project) {
+            $projectKey = $project['key'];
+            $svnUrl     = $this->toSvnUrl($projectKey);
+            $projectUrl = $this->toProjectUrl($projectKey);
+
+        $addition = array(
+            'svn' => $svnUrl,
+            'url' => $projectUrl,
+            );
+        $project = Set::merge($project, $addition);
+        }
+
         return $projects;
     }
 
     /**
      * Converted to a URL of Subversion
      *
-     * @param $projectKey The project key
-     * @return string|null The URL of Subversion, NULL if the key is empty.
+     * @param String $projectKey The project key
+     * @return String|null The URL of Subversion, NULL if the key is empty.
      */
     private function toSvnUrl($projectKey) {
         $formatOfSvnUrl = Configure::read('Backlog.formatOfSvnUrl');  
@@ -105,8 +88,8 @@ class Backlog extends AppModel {
     /**
      * Converted to a URL of project top
      *
-     * @param $projectKey The project key
-     * @return string|null The URL of project, NULL if the key is empty.
+     * @param String $projectKey The project key
+     * @return String|null The URL of project, NULL if the key is empty.
      */
     private function toProjectUrl($projectKey) {
         $formatOfTopUrl = Configure::read('Backlog.formatOfTopUrl');  
@@ -122,10 +105,10 @@ class Backlog extends AppModel {
     /**
      * The Subversion exists in the project?
      *
-     * @param $projectKey The key of project
-     * @return boolean True if it exists
+     * @param String $url The subversion URL of project
+     * @return Boolean True if it exists
      */
-    private function existsSubversion($url) {
+    public function existsSubversion($url) {
         $userName = Configure::read('Backlog.userName');
         $password = Configure::read('Backlog.password');
 

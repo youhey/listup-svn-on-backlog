@@ -28,7 +28,6 @@ class BacklogsController extends AppController {
         $this->set('title_for_layout', self::TITLE);
     }
 
-
     /**
      * for INDEX
      *
@@ -43,8 +42,27 @@ class BacklogsController extends AppController {
      * @return void
      */
     public function list_svn() {
-        $projects = $this->Backlog->fetchProjectsAndSvnUrl();
+    }
+
+    /**
+     * List the all projects
+     *
+     * @return void
+     */
+    public function projects() {
+        $projects = $this->Backlog->fetchProjects();
         $this->set(compact('projects'));
+    }
+
+    /**
+     * The Subversion exists in the project?
+     *
+     * @return void
+     */
+    public function exists_subversion() {
+        $subversionUrl    = Set::extract('url', $this->request->data);
+        $existsSubversion = $this->Backlog->existsSubversion($subversionUrl);
+        $this->set(compact('existsSubversion'));
     }
 }
 
